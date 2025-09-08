@@ -1,19 +1,30 @@
-#include "coupled_alpha.hpp"
+#include "lifted_delaunay.hpp"
 
-using Point = typename coupled_alpha::CoupledAlphaComplex<2>::Point;
+void test_lifted_delaunay() {
+  using V = Eigen::Vector2d;
+  using Cell = coupled_alpha::LiftedDelaunay<2>::Cell;
+  
+  coupled_alpha::LiftedDelaunay<2> lf;
+  lf.Insert(V{0.0, 0.00}, 0);
+  lf.Insert(V{1.0, 0.00}, 0);
+  lf.Insert(V{0.5, 0.72}, 0);
+  lf.Insert(V{0.0, 0.72}, 1);
+  lf.Insert(V{1.0, 0.72}, 1);
+  lf.Insert(V{0.5, 0.00}, 1);
+
+  std::vector<Cell> cells = lf.Cells();
+
+  for (const Cell& cell: cells) {
+    std::cout << "{"
+              << cell[0] << ", "
+              << cell[1] << ", "
+              << cell[2] << ", "
+              << cell[3] << "}" << std::endl;
+  }
+}
+
 
 int main(int argc, char** argv) {
-
-  coupled_alpha::CoupledAlphaComplex<2> cac;
-  
-  cac.Insert(Point{0.0, 0.0, 0.0});
-  cac.Insert(Point{1.0, 0.0, 0.0});
-  cac.Insert(Point{0.5, 0.72, 0.0});
-  cac.Insert(Point{0.0, 0.72, 1.0});
-  cac.Insert(Point{1.0, 0.72, 1.0});
-  cac.Insert(Point{0.5, 0.0, 1.0});
-  cac.ComputeDelaunay();
-  cac.Print();
-
+  test_lifted_delaunay();
   return 0;
 }
