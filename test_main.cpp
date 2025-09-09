@@ -4,11 +4,13 @@
 #include "lifted_delaunay.hpp"
 #include "min_circumsphere.hpp"
 
+using namespace coupled_alpha;
+
 static void test_lifted_delaunay() {
   using V = Eigen::Vector2d;
-  using Cell = coupled_alpha::LiftedDelaunay<2>::Cell;
+  using Cell = LiftedDelaunay<2>::Cell;
   
-  coupled_alpha::LiftedDelaunay<2> lf;
+  LiftedDelaunay<2> lf;
   lf.Insert(V{0.0, 0.00}, 0);
   lf.Insert(V{1.0, 0.00}, 0);
   lf.Insert(V{0.5, 0.72}, 0);
@@ -28,14 +30,14 @@ static void test_lifted_delaunay() {
 }
 
 static void test_simplex() {
-  using Simplex = coupled_alpha::Simplex;
+  using Simplex = Simplex;
   Simplex s = Simplex{0, 2, 4};
   std::cout << s << std::endl;
   std::cout << s.Dim() << std::endl;
 }
 
 static void test_min_circumsphere() {
-  using Simplex = coupled_alpha::Simplex;
+  using Simplex = Simplex;
   using Vector2d = Eigen::Vector2d;
   using Vector3d = Eigen::Vector3d;
   using std::sqrt;
@@ -46,18 +48,18 @@ static void test_min_circumsphere() {
   };
 
   {
-    auto [r, c] = coupled_alpha::MinimalCircumsphere<2>(Simplex{0}, points2d);
+    auto [r, c] = MinimalCircumsphere<2>(Simplex{0}, points2d);
     assert(r == 0.0);
     assert((c - Vector2d{0.0, 4.0}).norm() < 1e-5);
   }
 
   {
-    auto [r, c] = coupled_alpha::MinimalCircumsphere<2>(Simplex{0, 1}, points2d);
+    auto [r, c] = MinimalCircumsphere<2>(Simplex{0, 1}, points2d);
     assert(r == sqrt(2.0));
     assert((c - Vector2d{1.0, 3.0}).norm() < 1e-5);
   }
   {
-    auto [r, c] = coupled_alpha::MinimalCircumsphere<2>(Simplex{2, 3, 4}, points2d);
+    auto [r, c] = MinimalCircumsphere<2>(Simplex{2, 3, 4}, points2d);
     assert(std::fabs(r - 1 / sqrt(3.0)) < 1e-5);
     assert((c - Vector2d{0.5, 1.0 / (2 * sqrt(3.0))}).norm() < 1e-5);
   }
@@ -68,7 +70,7 @@ static void test_min_circumsphere() {
   };
 
   {
-    auto [r, c] = coupled_alpha::MinimalCircumsphere<3>(Simplex{0, 1, 2, 3}, points3d);
+    auto [r, c] = MinimalCircumsphere<3>(Simplex{0, 1, 2, 3}, points3d);
     assert(std::fabs(r - sqrt(3.0 / 8.0)) < 1e-5);
     assert((c - Vector3d{0.5, 1.0 / (2 * sqrt(3.0)), sqrt(6.0) / 12}).norm() < 1e-5);
   }
