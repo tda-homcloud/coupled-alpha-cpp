@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <array>
 #include <ostream>
+#include <utility>
 
 namespace coupled_alpha {
 
@@ -37,6 +38,18 @@ class Simplex {
   uint32_t operator[](std::size_t i) const {
     assert(i < num_verteices_);
     return vertices_[i];
+  }
+
+  std::pair<Simplex, Simplex> Split(const std::vector<uint8_t>& labels) const {
+    Simplex s0, s1;
+    for (int i = 0; i < num_verteices_; ++i) {
+      if (labels[vertices_[i]] == 0) {
+        s0.Append(vertices_[i]);
+      } else {
+        s1.Append(vertices_[i]);
+      }
+    }
+    return {s0, s1};
   }
   
   std::size_t hash() const {

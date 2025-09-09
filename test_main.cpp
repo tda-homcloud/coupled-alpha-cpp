@@ -1,4 +1,7 @@
 #include <cmath>
+#include <vector>
+#include <utility>
+#include <cstdint>
 
 #include "simplex.hpp"
 #include "lifted_delaunay.hpp"
@@ -6,7 +9,7 @@
 
 using namespace coupled_alpha;
 
-static void test_lifted_delaunay() {
+static void TestLiftedDelaunay() {
   using V = Eigen::Vector2d;
   using Cell = LiftedDelaunay<2>::Cell;
   
@@ -29,14 +32,18 @@ static void test_lifted_delaunay() {
   }
 }
 
-static void test_simplex() {
+static void TestSimplex() {
   using Simplex = Simplex;
+  std::vector<uint8_t> labels = {0, 1, 1, 0, 0, 0};
   Simplex s = Simplex{0, 2, 4};
+  
   std::cout << s << std::endl;
   std::cout << s.Dim() << std::endl;
+  auto [s0, s1] = s.Split(labels);
+  std::cout << s0 << " " << s1 << std::endl;
 }
 
-static void test_min_circumsphere() {
+static void TestMinimalCircumsphere() {
   using Simplex = Simplex;
   using Vector2d = Eigen::Vector2d;
   using Vector3d = Eigen::Vector3d;
@@ -77,8 +84,8 @@ static void test_min_circumsphere() {
 }
 
 int main(int argc, char** argv) {
-  test_lifted_delaunay();
-  test_simplex();
-  test_min_circumsphere();
+  TestLiftedDelaunay();
+  TestSimplex();
+  TestMinimalCircumsphere();
   return 0;
 }
