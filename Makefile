@@ -1,4 +1,6 @@
-test_main: test_main.cpp coupled_alpha.hpp
+HEADERS := $(wildcard *.hpp)
+
+test_main: test_main.cpp $(HEADERS)
 	g++ -std=c++17 -Wall -Ieigen -ICGAL-5.6.1/include -o test_main test_main.cpp -lgmp -lmpfr
 
 .PHONY: setup-dependencies

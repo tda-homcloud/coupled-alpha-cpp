@@ -2,46 +2,62 @@
 #define COUPLED_ALPHA_SIMPLEX_HPP
 
 #include <cstdint>
+#include <cassert>
 #include <initializer_list>
+#include <array>
+#include <ostream>
 
 namespace coupled_alpha {
 
 class Simplex {
  private:
-  uint32_t vertices_[4];
-  
-  static const uint32_t UNUSED = 0xffffffff;
+  uint16_t num_verteices_;
+  std::array<uint32_t, 4> vertices_;
   
  public:
-  Simplex(): vertices_{UNUSED, UNUSED, UNUSED, UNUSED} {}
+  Simplex(): num_verteices_(0) {}
 
   Simplex(std::initializer_list<uint32_t> init) {
     assert(init.size() <= 4);
-    std::copy(init.begin(), init.end(), vertices_);
-    std::fill(vertices_ + init.size(), vertices_ + 4, UNUSED);
+    num_verteices_ = init.size();
+    std::copy(init.begin(), init.end(), vertices_.begin());
   }
 
-  std::size_t dim() const {
-    for (std::size_t i = 1; i < 4; ++i) {
-      if (vertices_[i] == UNUSED)
-        return i - 1;
-    }
-    return 3;
+  void Append(uint32_t n) {
+    assert(num_verteices_ < 4);
+    vertices_[num_verteices_] = n;
+    ++num_verteices_;
   }
-
-  uint32_t operator[](size_t i) const {
-    assert(i < 4);
-    assert(vertices_[i] != UNUSED);
+  
+  inline uint16_t Dim() const {
+    assert(num_verteices_ > 0);
+    return num_verteices_ - 1;
+  }
+  
+  uint32_t operator[](std::size_t i) const {
+    assert(i < num_verteices_);
     return vertices_[i];
   }
   
-  size_t hash() const {
-    return static_cast<size_t>(vertices_[0] ^ vertices_[1] ^ vertices_[2] ^ vertices_[3]);
+  std::size_t hash() const {
+    std::size_t hash_value = 0;
+    for (uint16_t i = 0; i < num_verteices_; ++i)
+      hash_value ^= vertices_[i];
+    return hash_value;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Simplex& simplex) {
+    os << "Simplex{";
+    for (uint16_t i = 0; i < simplex.num_verteices_ - 1; ++i) {
+      os << simplex.vertices_[i] << ", ";
+    }
+    os << simplex.vertices_[simplex.num_verteices_ - 1] << "}";
+    return os;
   }
 };
 
 class SimplexHash {
-  size_t operator()(const Simplex& simplex) { return simplex.hash(); }
+  std::size_t operator()(const Simplex& simplex) { return simplex.hash(); }
 };
 
 } // namespace coupled_alpha
