@@ -24,23 +24,25 @@ class Simplex {
     std::copy(init.begin(), init.end(), vertices_.begin());
   }
 
-  void Append(uint32_t n) {
+  inline void Append(uint32_t n) {
     assert(num_verteices_ < 4);
     vertices_[num_verteices_] = n;
     ++num_verteices_;
   }
+
+  inline bool Empty() const { return num_verteices_ == 0; }
   
   inline uint16_t Dim() const {
     assert(num_verteices_ > 0);
     return num_verteices_ - 1;
   }
   
-  uint32_t operator[](std::size_t i) const {
+  inline uint32_t operator[](std::size_t i) const {
     assert(i < num_verteices_);
     return vertices_[i];
   }
 
-  std::pair<Simplex, Simplex> Split(const std::vector<uint8_t>& labels) const {
+  inline std::pair<Simplex, Simplex> Split(const std::vector<uint8_t>& labels) const {
     Simplex s0, s1;
     for (int i = 0; i < num_verteices_; ++i) {
       if (labels[vertices_[i]] == 0) {
