@@ -11,6 +11,8 @@
 #include <CGAL/Delaunay_triangulation.h>
 #include <Eigen/Dense>
 
+#include "common.hpp"
+
 namespace coupled_alpha {
 
 template<int D>
@@ -23,7 +25,7 @@ class LiftedDelaunay {
   using Vertex_handle = typename T::Vertex_handle;
   using Vector = Eigen::Vector<double, D>;
   using LPoint = typename T::Point;
-  using Cell = std::array<uint32_t, D + 2>;
+  using Cell = ::coupled_alpha::Cell<D>;
   
  private:
   T dt_;

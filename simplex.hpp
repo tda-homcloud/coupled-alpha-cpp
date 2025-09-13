@@ -5,46 +5,56 @@
 #include <cassert>
 #include <initializer_list>
 #include <array>
+#include <unordered_set>
 #include <ostream>
 #include <utility>
+#include <functional>
+#include <iterator>
+#include <iostream>
+#include <boost/iterator/iterator_facade.hpp>
+#include <boost/container/static_vector.hpp>
+
+#include "common.hpp"
 
 namespace coupled_alpha {
 
-class Simplex {
- private:
-  uint16_t num_verteices_;
-  std::array<uint32_t, 4> vertices_;
-  
+class SimplexFaceIterator;
+
+class Simplex {  
  public:
-  Simplex(): num_verteices_(0) {}
+  using Container = boost::container::static_vector<uint32_t, 5>;
+  
+  friend class SimplexFaceIterator;
+  
+  Simplex() {}
 
-  Simplex(std::initializer_list<uint32_t> init) {
-    assert(init.size() <= 4);
-    num_verteices_ = init.size();
-    std::copy(init.begin(), init.end(), vertices_.begin());
+  Simplex(std::initializer_list<uint32_t> init): vertices_(init) {}
+
+  inline bool operator==(const Simplex& other) const {
+    return vertices_ == other.vertices_;
   }
-
+  
+  template<typename Iterator>
+  Simplex(Iterator begin, Iterator end): vertices_(begin, end) {}
+  
   inline void Append(uint32_t n) {
-    assert(num_verteices_ < 4);
-    vertices_[num_verteices_] = n;
-    ++num_verteices_;
+    vertices_.push_back(n);
   }
 
-  inline bool Empty() const { return num_verteices_ == 0; }
+  inline bool Empty() const { return vertices_.empty(); }
   
   inline uint16_t Dim() const {
-    assert(num_verteices_ > 0);
-    return num_verteices_ - 1;
+    assert(vertices_.size() > 0);
+    return vertices_.size() - 1;
   }
-  
+
   inline uint32_t operator[](std::size_t i) const {
-    assert(i < num_verteices_);
     return vertices_[i];
   }
 
   inline std::pair<Simplex, Simplex> Split(const std::vector<uint8_t>& labels) const {
     Simplex s0, s1;
-    for (int i = 0; i < num_verteices_; ++i) {
+    for (size_t i = 0; i < vertices_.size(); ++i) {
       if (labels[vertices_[i]] == 0) {
         s0.Append(vertices_[i]);
       } else {
@@ -53,26 +63,82 @@ class Simplex {
     }
     return {s0, s1};
   }
-  
-  std::size_t hash() const {
+
+  inline std::size_t hash() const {
     std::size_t hash_value = 0;
-    for (uint16_t i = 0; i < num_verteices_; ++i)
-      hash_value ^= vertices_[i];
+    for (uint32_t value: vertices_)
+      hash_value ^= value;
     return hash_value;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Simplex& simplex) {
-    os << "Simplex{";
-    for (uint16_t i = 0; i < simplex.num_verteices_ - 1; ++i) {
-      os << simplex.vertices_[i] << ", ";
+  std::vector<Simplex> ProperFaces() const {
+    if (Dim() == 0)
+      return std::vector<Simplex>();
+    
+    std::vector<Simplex> faces;
+    Simplex face(vertices_.begin() + 1, vertices_.end());
+    
+    for (size_t i = 0; i < vertices_.size() - 1; ++i) {
+      faces.push_back(face);
+      face.vertices_[i] = vertices_[i];
     }
-    os << simplex.vertices_[simplex.num_verteices_ - 1] << "}";
+    faces.push_back(face);
+
+    return faces;
+  }
+  
+  inline friend std::ostream& operator<<(std::ostream& os, const Simplex& simplex) {
+    if (simplex.vertices_.empty()) {
+      os << "Simplex{}";
+    } else {
+      os << "Simplex{";
+      for (size_t i = 0; i < simplex.vertices_.size() - 1; ++i) {
+        os << simplex.vertices_[i] << ", ";
+      }
+      os << simplex.vertices_[simplex.vertices_.size() - 1] << "}";
+    }
     return os;
   }
+
+ private:
+  Container vertices_;
+
 };
 
-class SimplexHash {
-  std::size_t operator()(const Simplex& simplex) { return simplex.hash(); }
+struct SimplexHash {
+  typedef std::size_t result_type;
+  std::size_t operator()(const Simplex& simplex) const { return simplex.hash(); }
+};
+
+
+class CellsToSimpices {
+ private:
+  std::unordered_set<Simplex, SimplexHash>& simplices_;
+
+  CellsToSimpices(std::unordered_set<Simplex, SimplexHash>& simplices): simplices_(simplices) {}
+
+  void visit(const Simplex& simplex) {
+    if (simplices_.count(simplex) == 0) {
+      simplices_.insert(simplex);
+      for (const auto& face: simplex.ProperFaces())
+        visit(face);
+    }
+  }
+  
+ public:
+  template<int D>
+  static std::unordered_set<Simplex, SimplexHash> Compute(const std::vector<Cell<D>>& cells) {
+    std::unordered_set<Simplex, SimplexHash> simplices;
+    CellsToSimpices builder(simplices);
+    
+    for (const auto& cell: cells) {
+      Simplex top_simplex(cell.begin(), cell.end());
+      std::cout << top_simplex << std::endl;
+      builder.visit(top_simplex);
+    }
+    
+    return simplices;
+  }
 };
 
 } // namespace coupled_alpha

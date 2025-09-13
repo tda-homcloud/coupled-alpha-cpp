@@ -7,6 +7,7 @@
 #include "simplex.hpp"
 #include "lifted_delaunay.hpp"
 #include "min_circumsphere.hpp"
+#include "coupled_alpha.hpp"
 
 using namespace coupled_alpha;
 
@@ -42,6 +43,11 @@ static void TestSimplex() {
   std::cout << s.Dim() << std::endl;
   auto [s0, s1] = s.Split(labels);
   std::cout << s0 << " " << s1 << std::endl;
+
+  for (const auto& ss: s.ProperFaces()) {
+    std::cout << ss << " ";
+  }
+  std::cout << std::endl;
 }
 
 static void TestMinimalCircumsphere() {
@@ -163,12 +169,26 @@ static void TestRelaxedFiltrationValue() {
   }
 }
 
-                                  
+static void TestCellsToSimplces() {
+  {
+    auto simplices = CellsToSimpices::Compute<2>(std::vector<Cell<2>>());
+    assert(simplices.size() == 0);
+  }
+  {
+    auto simplices = CellsToSimpices::Compute<2>(std::vector<Cell<2>>{Cell<2>{0, 2, 3, 4}});
+    assert(simplices.size() == 1 + 4 + 6 + 4);
+  }
+  {
+    auto simplices = CellsToSimpices::Compute<3>(std::vector<Cell<3>>{Cell<3>{0, 2, 3, 4, 5}});
+    assert(simplices.size() == 1 + 5 + 10 + 10 + 5);
+  }
+}
 
 int main(int argc, char** argv) {
   TestLiftedDelaunay();
   TestSimplex();
   TestMinimalCircumsphere();
   TestRelaxedFiltrationValue();
+  TestCellsToSimplces();
   return 0;
 }
