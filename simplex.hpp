@@ -42,7 +42,9 @@ class Simplex {
   }
 
   inline bool Empty() const { return vertices_.empty(); }
-  
+
+  inline const Container& Vertices() const { return vertices_; }
+
   inline uint16_t Dim() const {
     assert(vertices_.size() > 0);
     return vertices_.size() - 1;

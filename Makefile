@@ -1,7 +1,10 @@
 HEADERS := $(wildcard *.hpp)
-
+FLAGS := -g -std=c++17 -Wall -Ieigen -ICGAL-5.6.1/include
 test_main: test_main.cpp $(HEADERS)
-	g++ -g -std=c++17 -Wall -Ieigen -ICGAL-5.6.1/include -o test_main test_main.cpp -lgmp -lmpfr
+	g++ $(FLAGS) -o test_main test_main.cpp -lgmp -lmpfr
+
+coupled_alpha: main.cpp $(HEADERS)
+	g++ $(FLAGS) -o coupled_alpha main.cpp -lgmp -lmpfr
 
 .PHONY: setup-dependencies test
 test: test_main

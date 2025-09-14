@@ -35,7 +35,7 @@ MinimalCircumsphere(const Simplex& simplex, const std::vector<Eigen::Vector<doub
         }
         // std::cout << A << std::endl;
         // std::cout << b << std::endl;
-        
+
         const Vector r = A.colPivHouseholderQr().solve(b);
         return {r.norm(), p0 + r};
       }
@@ -106,6 +106,9 @@ struct RelaxedFiltrationValue {
     bp[N + M] = 0.5 * (x0.squaredNorm() - y0.squaredNorm());
     Vectord<D> d = Ap.colPivHouseholderQr().solve(bp - Ap * x0);
     double r = d.norm();
+    // std::cout << Ap << std::endl;
+    // std::cout << (bp - Ap * x0).transpose() << std::endl;
+    // std::cout << d.transpose() << " | " << d.norm() << std::endl;
     return {d + x0, r, r, r};
   }
 };

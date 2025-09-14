@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "simplex.hpp"
 #include "min_circumsphere.hpp"
+#include "lifted_delaunay.hpp"
 
 namespace coupled_alpha {
 
@@ -18,12 +19,12 @@ bool CoupledGabriel(
     const std::vector<uint8_t>& levels) {
 
   auto [sx, sy] = simplex.Split(levels);
-  for (int i = 0; i <= sx.Dim(); ++i) {
-    if ((coords[sx[i]] - face_rfv.center).norm() <= face_rfv.rx - EPS)
+  for (auto v: sx.Vertices()) {
+    if ((coords[v] - face_rfv.center).norm() <= face_rfv.rx - EPS)
       return false;
   }
-  for (int i = 0; i <= sy.Dim(); ++i) {
-    if ((coords[sy[i]] - face_rfv.center).norm() <= face_rfv.ry - EPS)
+  for (auto v: sy.Vertices()) {
+    if ((coords[v] - face_rfv.center).norm() <= face_rfv.ry - EPS)
       return false;
   }
   return true;
@@ -59,11 +60,14 @@ CoupledAlpha(const std::vector<Vectord<D>>& coords,
           values[k - 1][Q] = std::min(values[k - 1][Q], values[k][P]);
         } else {
           if (!CoupledGabriel(rfvs[k - 1][Q], P, coords, levels)) {
-            values[k - 1][Q] = values[k][P];
+            values[k - 1].insert(std::make_pair(Q, values[k][P]));
           }
         }
       }
     }
+  }
+  for (const auto& pt: simplices[0]) {
+    values[0][pt] = 0;
   }
   return values;
 }
