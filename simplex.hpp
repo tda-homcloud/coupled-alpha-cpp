@@ -71,7 +71,7 @@ class Simplex {
     return hash_value;
   }
 
-  std::vector<Simplex> ProperFaces() const {
+  inline std::vector<Simplex> ProperFaces() const {
     if (Dim() == 0)
       return std::vector<Simplex>();
     
@@ -111,33 +111,33 @@ struct SimplexHash {
 };
 
 
+template<int D>
 class CellsToSimpices {
- private:
-  std::unordered_set<Simplex, SimplexHash>& simplices_;
-
-  CellsToSimpices(std::unordered_set<Simplex, SimplexHash>& simplices): simplices_(simplices) {}
-
-  void visit(const Simplex& simplex) {
-    if (simplices_.count(simplex) == 0) {
-      simplices_.insert(simplex);
-      for (const auto& face: simplex.ProperFaces())
-        visit(face);
-    }
-  }
-  
  public:
-  template<int D>
-  static std::unordered_set<Simplex, SimplexHash> Compute(const std::vector<Cell<D>>& cells) {
-    std::unordered_set<Simplex, SimplexHash> simplices;
+  using Simplices = std::array<std::unordered_set<Simplex, SimplexHash>, D + 2>;
+
+  static Simplices Compute(const std::vector<Cell<D>>& cells) {
+    Simplices simplices;
     CellsToSimpices builder(simplices);
     
     for (const auto& cell: cells) {
       Simplex top_simplex(cell.begin(), cell.end());
-      std::cout << top_simplex << std::endl;
       builder.visit(top_simplex);
     }
     
     return simplices;
+  }
+
+ private:
+  Simplices& simplices_;
+  CellsToSimpices(Simplices& simplices): simplices_(simplices) {}
+
+  void visit(const Simplex& simplex) {
+    if (simplices_[simplex.Dim()].count(simplex) == 0) {
+      simplices_[simplex.Dim()].insert(simplex);
+      for (const auto& face: simplex.ProperFaces())
+        visit(face);
+    }
   }
 };
 

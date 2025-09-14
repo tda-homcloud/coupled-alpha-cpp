@@ -171,16 +171,26 @@ static void TestRelaxedFiltrationValue() {
 
 static void TestCellsToSimplces() {
   {
-    auto simplices = CellsToSimpices::Compute<2>(std::vector<Cell<2>>());
-    assert(simplices.size() == 0);
+    auto simplices = CellsToSimpices<2>::Compute(std::vector<Cell<2>>());
+    assert(simplices[0].size() == 0);
+    assert(simplices[1].size() == 0);
+    assert(simplices[2].size() == 0);
+    assert(simplices[3].size() == 0);
   }
   {
-    auto simplices = CellsToSimpices::Compute<2>(std::vector<Cell<2>>{Cell<2>{0, 2, 3, 4}});
-    assert(simplices.size() == 1 + 4 + 6 + 4);
+    auto simplices = CellsToSimpices<2>::Compute(std::vector<Cell<2>>{Cell<2>{0, 2, 3, 4}});
+    assert(simplices[0].size() == 4);
+    assert(simplices[1].size() == 6);
+    assert(simplices[2].size() == 4);
+    assert(simplices[3].size() == 1);
   }
   {
-    auto simplices = CellsToSimpices::Compute<3>(std::vector<Cell<3>>{Cell<3>{0, 2, 3, 4, 5}});
-    assert(simplices.size() == 1 + 5 + 10 + 10 + 5);
+    auto simplices = CellsToSimpices<3>::Compute(std::vector<Cell<3>>{Cell<3>{0, 2, 3, 4, 5}});
+    assert(simplices[0].size() == 5);
+    assert(simplices[1].size() == 10);
+    assert(simplices[2].size() == 10);
+    assert(simplices[3].size() == 5);
+    assert(simplices[4].size() == 1);
   }
 }
 
