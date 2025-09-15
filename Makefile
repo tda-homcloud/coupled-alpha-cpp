@@ -1,14 +1,35 @@
 HEADERS := $(wildcard *.hpp)
 FLAGS := -g -std=c++17 -Wall -Ieigen -ICGAL-5.6.1/include
-test_main: test_main.cpp $(HEADERS)
-	g++ $(FLAGS) -o test_main test_main.cpp -lgmp -lmpfr
+test_simplex: test_simplex.cpp $(HEADERS)
+	g++ $(FLAGS) -o test_simplex test_simplex.cpp -lgmp -lmpfr
+
+.PHONY: run_test_simplex
+run_test_simplex: test_simplex
+	./test_simplex
+
+test_lifted_delaunay: test_lifted_delaunay.cpp $(HEADERS)
+	g++ $(FLAGS) -o test_lifted_delaunay test_lifted_delaunay.cpp -lgmp -lmpfr
+
+.PHONY: run_test_lifted_delaunay
+run_test_lifted_delaunay: test_lifted_delaunay
+	./test_lifted_delaunay
+
+test_min_circumsphere: test_min_circumsphere.cpp $(HEADERS)
+	g++ $(FLAGS) -o test_min_circumsphere test_min_circumsphere.cpp -lgmp -lmpfr
+
+.PHONY: run_test_min_circumsphere
+run_test_min_circumsphere: test_min_circumsphere
+	./test_min_circumsphere
+
+test_relaxed_filtration_value: test_relaxed_filtration_value.cpp $(HEADERS)
+	g++ $(FLAGS) -o test_relaxed_filtration_value test_relaxed_filtration_value.cpp -lgmp -lmpfr
+
+.PHONY: run_test_relaxed_filtration_value
+run_test_relaxed_filtration_value: test_relaxed_filtration_value
+	./test_relaxed_filtration_value
 
 coupled_alpha: main.cpp $(HEADERS)
 	g++ $(FLAGS) -o coupled_alpha main.cpp -lgmp -lmpfr
-
-.PHONY: setup-dependencies test
-test: test_main
-	./test_main
 
 setup-dependencies:
 	curl -L -O https://github.com/CGAL/cgal/releases/download/v5.6.1/CGAL-5.6.1.tar.xz

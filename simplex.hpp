@@ -33,34 +33,38 @@ class Simplex {
   inline bool operator==(const Simplex& other) const {
     return vertices_ == other.vertices_;
   }
+
+  inline bool operator!=(const Simplex& other) const {
+    return !(*this == other);
+  }
   
   template<typename Iterator>
   Simplex(Iterator begin, Iterator end): vertices_(begin, end) {}
   
-  inline void Append(uint32_t n) {
+  inline void push_back(uint32_t n) {
     vertices_.push_back(n);
   }
 
-  inline bool Empty() const { return vertices_.empty(); }
+  inline bool empty() const { return vertices_.empty(); }
 
-  inline const Container& Vertices() const { return vertices_; }
+  inline const Container& vertices() const { return vertices_; }
 
-  inline uint16_t Dim() const {
+  inline int dim() const {
     assert(vertices_.size() > 0);
     return vertices_.size() - 1;
   }
 
-  inline uint32_t operator[](std::size_t i) const {
-    return vertices_[i];
-  }
+  inline size_t size() const { return vertices_.size(); }
 
-  inline std::pair<Simplex, Simplex> Split(const std::vector<uint8_t>& labels) const {
+  inline uint32_t operator[](std::size_t i) const { return vertices_[i]; }
+
+  inline std::pair<Simplex, Simplex> split(const std::vector<uint8_t>& labels) const {
     Simplex s0, s1;
     for (size_t i = 0; i < vertices_.size(); ++i) {
       if (labels[vertices_[i]] == 0) {
-        s0.Append(vertices_[i]);
+        s0.push_back(vertices_[i]);
       } else {
-        s1.Append(vertices_[i]);
+        s1.push_back(vertices_[i]);
       }
     }
     return {s0, s1};
@@ -73,14 +77,14 @@ class Simplex {
     return hash_value;
   }
 
-  inline std::vector<Simplex> ProperFaces() const {
-    if (Dim() == 0)
-      return std::vector<Simplex>();
+  inline std::vector<Simplex> faces() const {
+    if (dim() == 0)
+      return {};
     
     std::vector<Simplex> faces;
     Simplex face(vertices_.begin() + 1, vertices_.end());
     
-    for (size_t i = 0; i < vertices_.size() - 1; ++i) {
+    for (size_t i = 0; i < size() - 1; ++i) {
       faces.push_back(face);
       face.vertices_[i] = vertices_[i];
     }
@@ -94,17 +98,29 @@ class Simplex {
       os << "Simplex{}";
     } else {
       os << "Simplex{";
-      for (size_t i = 0; i < simplex.vertices_.size() - 1; ++i) {
+      
+      for (size_t i = 0; i < simplex.size() - 1; ++i)
         os << simplex.vertices_[i] << ", ";
-      }
-      os << simplex.vertices_[simplex.vertices_.size() - 1] << "}";
+
+      os << simplex.vertices_[simplex.size() - 1] << "}";
     }
     return os;
   }
 
+  std::string join(const std::string& sep) const {
+    if (empty())
+      return "";
+
+    std::string ret;
+    for (size_t i = 0; i < size() - 1; ++i) {
+      ret.append(std::to_string(vertices_[i]));
+      ret.append(sep);
+    }
+    ret.append(std::to_string(vertices_.back()));
+    return ret;
+  }
  private:
   Container vertices_;
-
 };
 
 struct SimplexHash {
@@ -112,13 +128,12 @@ struct SimplexHash {
   std::size_t operator()(const Simplex& simplex) const { return simplex.hash(); }
 };
 
-
 template<int D>
 class CellsToSimpices {
  public:
   using Simplices = std::array<std::unordered_set<Simplex, SimplexHash>, D + 2>;
 
-  static Simplices Compute(const std::vector<Cell<D>>& cells) {
+  static Simplices compute(const std::vector<Cell<D>>& cells) {
     Simplices simplices;
     CellsToSimpices builder(simplices);
     
@@ -135,9 +150,9 @@ class CellsToSimpices {
   CellsToSimpices(Simplices& simplices): simplices_(simplices) {}
 
   void visit(const Simplex& simplex) {
-    if (simplices_[simplex.Dim()].count(simplex) == 0) {
-      simplices_[simplex.Dim()].insert(simplex);
-      for (const auto& face: simplex.ProperFaces())
+    if (simplices_[simplex.dim()].count(simplex) == 0) {
+      simplices_[simplex.dim()].insert(simplex);
+      for (const auto& face: simplex.faces())
         visit(face);
     }
   }

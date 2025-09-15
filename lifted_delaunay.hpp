@@ -24,7 +24,7 @@ class LiftedDelaunay {
   using T = CGAL::Delaunay_triangulation<K>;
   using Vertex_handle = typename T::Vertex_handle;
   using Vector = Eigen::Vector<double, D>;
-  using LPoint = typename T::Point;
+  using LiftedPoint = typename T::Point;
   using Cell = ::coupled_alpha::Cell<D>;
   
  private:
@@ -36,8 +36,8 @@ class LiftedDelaunay {
  public:
   LiftedDelaunay(): dt_(D + 1), n_(0) {}
 
-  void Insert(const Vector& coord, uint8_t level) {
-    LPoint lifted_point = Lift(coord, level);
+  void insert(const Vector& coord, uint8_t level) {
+    LiftedPoint lifted_point = lift(coord, level);
     
     if (last_handle_ == Vertex_handle()) {
       last_handle_ = dt_.insert(lifted_point);
@@ -48,22 +48,22 @@ class LiftedDelaunay {
     ++n_;
   }
 
-  LPoint Lift(const Vector& c, uint8_t level) {
+  LiftedPoint lift(const Vector& c, uint8_t level) {
     if constexpr (D == 2) {
-      return LPoint(c[0], c[1], level);
+      return LiftedPoint(c[0], c[1], level);
     } else {
-      return LPoint(c[0], c[1], c[2], level);
+      return LiftedPoint(c[0], c[1], c[2], level);
     }
   }
 
-  std::vector<Cell> Cells() {
-    std::vector<Cell> cells;
+  std::vector<Cell> cells() {
+    std::vector<Cell> ret;
 
     for (auto cit = dt_.full_cells_begin(); cit != dt_.full_cells_end(); ++cit) {
       if (dt_.is_infinite(cit))
         continue;
 
-      Cell& cell = cells.emplace_back();
+      Cell& cell = ret.emplace_back();
       int k = 0;
 
       for (auto vit = cit->vertices_begin(); vit != cit->vertices_end(); ++vit, ++k) {
@@ -72,7 +72,7 @@ class LiftedDelaunay {
       std::sort(cell.begin(), cell.end());
     }
 
-    return cells;
+    return ret;
   }
 };
 
