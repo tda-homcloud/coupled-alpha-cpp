@@ -52,7 +52,7 @@ void run(std::ifstream& f) {
   for (size_t d = 0; d <= D + 1; ++d) {
     for (const auto& [simplex, value]: filtration_values[d]) {
       std::cout << simplex.join(" ") << " "
-                << std::fixed << std::setprecision(7) << value << std::endl;
+                << std::fixed << std::setprecision(14) << value << std::endl;
     }
   }
 }
