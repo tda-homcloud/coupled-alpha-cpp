@@ -1,3 +1,7 @@
 CGAL-5.6.1.tar.xz
 CGAL-5.6.1/
-test_main
+test_lifted_delaunay
+test_min_circumsphere
+test_relaxed_filtration_value
+test_simplex
+coupled_alpha
