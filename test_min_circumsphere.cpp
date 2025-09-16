@@ -27,15 +27,15 @@ int main(int argc, char** argv) {
     };
     
     assert_min_circumsphere(0.0, Vector2d{0, 4}, Simplex{0}, points2d);
-    assert_min_circumsphere(sqrt(2), Vector2d{1, 3}, Simplex{0, 1}, points2d);
-    assert_min_circumsphere(1 / sqrt(3), Vector2d{0.5, 1 / (2 * sqrt(3))}, Simplex{2, 3, 4}, points2d);
+    assert_min_circumsphere(2.0, Vector2d{1, 3}, Simplex{0, 1}, points2d);
+    assert_min_circumsphere(1.0 / 3, Vector2d{0.5, 1 / (2 * sqrt(3))}, Simplex{2, 3, 4}, points2d);
   }
   {
     std::vector<Vector3d> points3d = {
       Vector3d{0, 0, 0}, Vector3d{1, 0, 0}, Vector3d{0.5, sqrt(3) / 2, 0}, 
       Vector3d{0.5, sqrt(3) / 6, sqrt(6) / 3},
     };
-    assert_min_circumsphere(sqrt(3.0 / 8),
+    assert_min_circumsphere(3.0 / 8,
                             Vector3d{0.5, 1 / (2 * sqrt(3)), sqrt(6) / 12},
                             Simplex{0, 1, 2, 3}, points3d);
   }

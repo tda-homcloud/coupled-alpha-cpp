@@ -37,7 +37,7 @@ min_circumsphere(const Simplex& simplex, const std::vector<Vectord<D>>& coords) 
       {
         auto& x0 = coords[simplex[0]];
         auto& x1 = coords[simplex[1]];
-        return {(x0 - x1).norm() / 2.0, (x0 + x1) / 2.0};
+        return {(x0 - x1).squaredNorm() / 4.0, (x0 + x1) / 2.0};
       }
     case 2:
     case 3:
@@ -47,7 +47,7 @@ min_circumsphere(const Simplex& simplex, const std::vector<Vectord<D>>& coords) 
         Vectord<D> x0 = partial_lsqst_problem(A, b, simplex, coords);
         // const Vectord<D> r = A.colPivHouseholderQr().solve(b - A * x0);
         const Vectord<D> r = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * x0);
-        return {r.norm(), x0 + r};
+        return {r.squaredNorm(), x0 + r};
       }
     default:
       assert(0);
@@ -93,21 +93,21 @@ struct RelaxedFiltrationValue {
     auto b = bp.segment(0, M + N);
       
     const Vectord<D> cx = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * x0) + x0;
-    double rxx = (cx - x0).norm();
-    double rxy = (cx - y0).norm();
+    double rxx = (cx - x0).squaredNorm();
+    double rxy = (cx - y0).squaredNorm();
     if (rxx >= rxy)
       return {cx, rxx, rxx, rxy};
     
     const Vectord<D> cy = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * y0) + y0;
-    double ryx = (cy - x0).norm();
-    double ryy = (cy - y0).norm();
+    double ryx = (cy - x0).squaredNorm();
+    double ryy = (cy - y0).squaredNorm();
     if (ryy >= ryx)
       return {cy, ryy, ryx, ryy};
 
     Ap.row(N + M) = (x0 - y0).transpose();
     bp[N + M] = 0.5 * (x0.squaredNorm() - y0.squaredNorm());
     const Vectord<D> d = Ap.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(bp - Ap * x0);
-    double r = d.norm();
+    double r = d.squaredNorm();
     return {d + x0, r, r, r};
   }
 };

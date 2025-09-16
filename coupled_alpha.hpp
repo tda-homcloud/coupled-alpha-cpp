@@ -67,11 +67,11 @@ class CoupledAlpha {
     auto [sx, sy] = simplex.split(levels_);
 
     for (const auto v: sx.vertices()) {
-      if ((coords_[v] - rfv.center).norm() <= rfv.rx - EPS)
+      if ((coords_[v] - rfv.center).squaredNorm() <= rfv.rx - EPS)
         return false;
     }
     for (const auto v: sy.vertices()) {
-      if ((coords_[v] - rfv.center).norm() <= rfv.ry - EPS)
+      if ((coords_[v] - rfv.center).squaredNorm() <= rfv.ry - EPS)
         return false;
     }
     

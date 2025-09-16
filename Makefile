@@ -39,7 +39,7 @@ coupled_alpha: main.cpp $(HEADERS)
 	g++ $(FLAGS) -o coupled_alpha main.cpp -lgmp -lmpfr
 
 .PHONY: run_cmp
-run_cmp:
+run_cmp: coupled_alpha
 	cp compare_with_original_ca.py cmp_work
 	cd cmp_work && python compare_with_original_ca.py 3 20 20
 	cd cmp_work && python compare_with_original_ca.py 2 20 20

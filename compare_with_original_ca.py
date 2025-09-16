@@ -14,7 +14,7 @@ def run_orig_ca(xs, ys):
     for k, k_lists in enumerate(ca.ST.lists):
         for key in k_lists:
             for node in k_lists[key]:
-                values[tuple(ca.ST.node2simplex(node))] = np.sqrt(float(node.filtration))
+                values[tuple(ca.ST.node2simplex(node))] = float(node.filtration)
     
     return values
 

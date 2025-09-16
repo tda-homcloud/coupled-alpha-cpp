@@ -39,28 +39,28 @@ int main(int argc, char** argv) {
   RelaxedFiltrationValue<2> rfv;
 
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{0, 1}, Simplex{}, points2d);
-  assert_relaxed_filtration_value(Vector2d{1.0, 3.0}, sqrt(2.0), sqrt(2.0), -1, rfv);
+  assert_relaxed_filtration_value(Vector2d{1.0, 3.0}, 2, 2, -1, rfv);
     
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{}, Simplex{0, 1}, points2d);
-  assert_relaxed_filtration_value(Vector2d{1.0, 3.0}, sqrt(2.0), -1.0, sqrt(2.0), rfv);
+  assert_relaxed_filtration_value(Vector2d{1.0, 3.0}, 2, -1.0, 2, rfv);
 
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{0}, Simplex{1}, points2d);
-  assert_relaxed_filtration_value(Vector2d{1.0, 3.0}, sqrt(2.0), sqrt(2.0), sqrt(2.0), rfv);
+  assert_relaxed_filtration_value(Vector2d{1.0, 3.0}, 2, 2, 2, rfv);
     
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{2, 3}, Simplex{4}, points2d);
-  assert_relaxed_filtration_value(Vector2d{0.5, 1.0}, 1.5, sqrt(1.25), 1.5, rfv);
+  assert_relaxed_filtration_value(Vector2d{0.5, 1.0}, 2.25, 1.25, 2.25, rfv);
 
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{4}, Simplex{2, 3}, points2d);
-  assert_relaxed_filtration_value(Vector2d{0.5, 1.0}, 1.5, 1.5, sqrt(1.25), rfv);
+  assert_relaxed_filtration_value(Vector2d{0.5, 1.0}, 2.25, 2.25, 1.25, rfv);
     
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{2}, Simplex{4, 6}, points2d);
-  assert_relaxed_filtration_value(Vector2d{0.25, 2.0}, sqrt(4.0625), sqrt(4.0625), sqrt(4.0625), rfv);
+  assert_relaxed_filtration_value(Vector2d{0.25, 2.0}, 4.0625, 4.0625, 4.0625, rfv);
 
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{2, 7}, Simplex{8, 9}, points2d);
-  assert_relaxed_filtration_value(Vector2d{1, 3}, sqrt(20), sqrt(10), sqrt(20), rfv);
+  assert_relaxed_filtration_value(Vector2d{1, 3}, 20, 10, 20, rfv);
 
   rfv = RelaxedFiltrationValue<2>::compute(Simplex{2, 7}, Simplex{10, 11}, points2d);
-  assert_relaxed_filtration_value(Vector2d{1, 3}, sqrt(10), sqrt(10), sqrt(8), rfv);
+  assert_relaxed_filtration_value(Vector2d{1, 3}, 10, 10, 8, rfv);
 
   return 0;
 }
