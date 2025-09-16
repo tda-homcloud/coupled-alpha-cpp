@@ -28,6 +28,13 @@ test_relaxed_filtration_value: test_relaxed_filtration_value.cpp $(HEADERS)
 run_test_relaxed_filtration_value: test_relaxed_filtration_value
 	./test_relaxed_filtration_value
 
+.PHONY: run_test_all
+run_test_all:
+	make run_test_simplex
+	make run_test_lifted_delaunay
+	make run_test_min_circumsphere
+	make run_test_relaxed_filtration_value
+
 coupled_alpha: main.cpp $(HEADERS)
 	g++ $(FLAGS) -o coupled_alpha main.cpp -lgmp -lmpfr
 
