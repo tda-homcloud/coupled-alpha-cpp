@@ -38,6 +38,16 @@ run_test_all:
 coupled_alpha: main.cpp $(HEADERS)
 	g++ $(FLAGS) -o coupled_alpha main.cpp -lgmp -lmpfr
 
+.PHONY: run_cmp
+run_cmp:
+	cp compare_with_original_ca.py cmp_work
+	cd cmp_work && python compare_with_original_ca.py 3 20 20
+	cd cmp_work && python compare_with_original_ca.py 2 20 20
+
 setup-dependencies:
 	curl -L -O https://github.com/CGAL/cgal/releases/download/v5.6.1/CGAL-5.6.1.tar.xz
 	tar xf CGAL-5.6.1.tar.xz
+	git clone https://github.com/yohaireani/cycle-registration-persistent-homology.git
+	mkdir -p cmp_work
+	cp cycle-registration-persistent-homology/*.py cmp_work
+

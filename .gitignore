@@ -5,3 +5,5 @@ test_min_circumsphere
 test_relaxed_filtration_value
 test_simplex
 coupled_alpha
+cycle-registration-persistent-homology/
+cmp_work
