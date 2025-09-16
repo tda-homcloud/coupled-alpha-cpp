@@ -19,91 +19,70 @@ class CoupledAlpha {
       const std::vector<uint8_t>& levels):
       coords_(coords), levels_(levels) {}
   
-  void compute() {
+  std::array<std::unordered_map<Simplex, double, SimplexHash>, D + 2> compute() {
     LiftedDelaunay<D> ldelaunay;
     for (size_t i = 0; i < coords_.size(); ++i)
       ldelaunay.insert(coords_[i], levels_[i]);
 
+    
     const auto cells = ldelaunay.cells();
     const auto simplices = CellsToSimpices<D>::compute(cells);
-    std::array<std::unordered_map<Simplex, RelaxedFiltrationValue<D>, SimplexHash>, D + 2> rfvs;
-    
+
     for (int d = 0; d <= D + 1; ++d) {
       for (const auto& simplex: simplices[d]) {
         auto [sx, sy] = simplex.split(levels_);
-        rfvs[d][simplex] = RelaxedFiltrationValue<D>::compute(sx, sy, coords_);
-        std::cout << simplex.join(" ") << std::setprecision(7) << rfvs[d][simplex].r << std::endl;
+        rfvs_[d][simplex] = RelaxedFiltrationValue<D>::compute(sx, sy, coords_);
       }
     }
+
+    std::array<std::unordered_map<Simplex, double, SimplexHash>, D + 2> filtration_values;
+
+    for (int d = D + 1; d >= 1; --d) {
+      for (const auto& simplex: simplices[d]) {
+        if (filtration_values[d].count(simplex) == 0) {
+          filtration_values[d][simplex] = rfvs_[d][simplex].r;
+        }
+
+        double rs = filtration_values[d][simplex];
+        
+        for (const auto& face: simplex.faces()) {
+          if (filtration_values[d - 1].count(face) == 1) {
+            filtration_values[d - 1][face] = std::min(filtration_values[d - 1][face], rs);
+          } else {
+            if (!is_coupled_gabriel(face, simplex))
+              filtration_values[d - 1][face] = rs;
+          }
+        }
+      }
+    }
+
+    for (const auto& s: simplices[0])
+      filtration_values[0][s] = 0.0;
+    
+    return filtration_values;
   }
   
-  // bool is_coupled_gabriel(const Simplex& face, const Simplex& simplex) const {
-  // }
+  bool is_coupled_gabriel(const Simplex& face, const Simplex& simplex) {
+    const auto& rfv = rfvs_[face.dim()][face];
+    auto [sx, sy] = simplex.split(levels_);
+
+    for (const auto v: sx.vertices()) {
+      if ((coords_[v] - rfv.center).norm() <= rfv.rx - EPS)
+        return false;
+    }
+    for (const auto v: sy.vertices()) {
+      if ((coords_[v] - rfv.center).norm() <= rfv.ry - EPS)
+        return false;
+    }
+    
+    return true;
+  }
+  
  private:
   const std::vector<Vectord<D>>& coords_;
   const std::vector<uint8_t>& levels_;
+  std::array<std::unordered_map<Simplex, RelaxedFiltrationValue<D>, SimplexHash>, D + 2> rfvs_;
 };
-  
-// template<int D>
-// bool is_coupled_gabriel(
-//     const RelaxedFiltrationValue<D>& face_rfv,
-//     const Simplex& simplex,
-//     const std::vector<Vectord<D>>& coords,
-//     const std::vector<uint8_t>& levels) {
-
-//   auto [sx, sy] = simplex.Split(levels);
-//   for (auto v: sx.Vertices()) {
-//     if ((coords[v] - face_rfv.center).norm() <= face_rfv.rx - EPS)
-//       return false;
-//   }
-//   for (auto v: sy.Vertices()) {
-//     if ((coords[v] - face_rfv.center).norm() <= face_rfv.ry - EPS)
-//       return false;
-//   }
-//   return true;
-// }
-
-// template<int D>
-// std::array<std::unordered_map<Simplex, double, SimplexHash>, D + 2>
-// CoupledAlpha(const std::vector<Vectord<D>>& coords,
-//              const std::vector<uint8_t>& levels){
-//   LiftedDelaunay<D> ldelaunay;
-//   for (size_t i = 0; i < coords.size(); ++i)
-//     ldelaunay.Insert(coords[i], levels[i]);
-  
-//   auto cells = ldelaunay.Cells();
-//   auto simplices = CellsToSimpices<D>::Compute(cells);
-//   std::array<std::unordered_map<Simplex, RelaxedFiltrationValue<D>, SimplexHash>, D + 2> rfvs;
-//   std::array<std::unordered_map<Simplex, double, SimplexHash>, D + 2> values;
-  
-//   for (int k = 1; k <= D + 1; ++k) {
-//     for (const auto& P: simplices[k]) {
-//       auto [sx, sy] = P.Split(levels);
-//       rfvs[k][P] = RelaxedFiltrationValue<D>::Compute(sx, sy, coords);
-//     }
-//   }
-  
-//   for (int k = D + 1; k >= 1; --k) {
-//     for (const auto& P: simplices[k]) {
-//       if (values[k].count(P) == 0) {
-//         values[k].insert(std::make_pair(P, rfvs[k][P].r));
-//       }
-//       for (const auto& Q: P.ProperFaces()) {
-//         if (values[k - 1].count(Q) == 1) {
-//           values[k - 1][Q] = std::min(values[k - 1][Q], values[k][P]);
-//         } else {
-//           if (!CoupledGabriel(rfvs[k - 1][Q], P, coords, levels)) {
-//             values[k - 1].insert(std::make_pair(Q, values[k][P]));
-//           }
-//         }
-//       }
-//     }
-//   }
-//   for (const auto& pt: simplices[0]) {
-//     values[0][pt] = 0;
-//   }
-//   return values;
-// }
 
   
 } //namespace coupled_alpha

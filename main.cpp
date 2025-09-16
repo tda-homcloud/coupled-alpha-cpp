@@ -47,16 +47,14 @@ template<int D>
 void run(std::ifstream& f) {
   auto [levels, coords] = load_txt<D>(f);
   CoupledAlpha<D> coupled_alpha(coords, levels);
-  coupled_alpha.compute();
-  
-  // for (size_t d = 0; d <= D + 1; ++d) {
-  //   for (const auto& [simplex, v]: coupled_alpha[d]) {
-  //     for (int i = 0; i <= simplex.Dim(); ++i) {
-  //       std::cout << simplex[i] << " ";
-  //     }
-  //     std::cout << std::setprecision(15) << v << std::endl;
-  //   }
-  // }
+  const auto filtration_values = coupled_alpha.compute();
+
+  for (size_t d = 0; d <= D + 1; ++d) {
+    for (const auto& [simplex, value]: filtration_values[d]) {
+      std::cout << simplex.join(" ") << " "
+                << std::fixed << std::setprecision(7) << value << std::endl;
+    }
+  }
 }
 
 int main(int argc, char** argv) {

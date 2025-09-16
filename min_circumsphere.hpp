@@ -45,7 +45,8 @@ min_circumsphere(const Simplex& simplex, const std::vector<Vectord<D>>& coords) 
         Eigen::MatrixXd A(simplex.dim(), D);
         Eigen::VectorXd b(simplex.dim());
         Vectord<D> x0 = partial_lsqst_problem(A, b, simplex, coords);
-        const Vectord<D> r = A.colPivHouseholderQr().solve(b - A * x0);
+        // const Vectord<D> r = A.colPivHouseholderQr().solve(b - A * x0);
+        const Vectord<D> r = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * x0);
         return {r.norm(), x0 + r};
       }
     default:
@@ -89,15 +90,15 @@ struct RelaxedFiltrationValue {
     const auto y0 = partial_lsqst_problem(Ay, by, sy, coords);
 
     auto A = Ap.block(0, 0, M + N, D);
-    auto b = bp.block(0, 0, M + N, 1);
+    auto b = bp.segment(0, M + N);
       
-    const Vectord<D> cx = A.colPivHouseholderQr().solve(b - A * x0) + x0;
+    const Vectord<D> cx = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * x0) + x0;
     double rxx = (cx - x0).norm();
     double rxy = (cx - y0).norm();
     if (rxx >= rxy)
       return {cx, rxx, rxx, rxy};
     
-    const Vectord<D> cy = A.colPivHouseholderQr().solve(b - A * y0) + y0;
+    const Vectord<D> cy = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * y0) + y0;
     double ryx = (cy - x0).norm();
     double ryy = (cy - y0).norm();
     if (ryy >= ryx)
@@ -105,7 +106,7 @@ struct RelaxedFiltrationValue {
 
     Ap.row(N + M) = (x0 - y0).transpose();
     bp[N + M] = 0.5 * (x0.squaredNorm() - y0.squaredNorm());
-    const Vectord<D> d = Ap.colPivHouseholderQr().solve(bp - Ap * x0);
+    const Vectord<D> d = Ap.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(bp - Ap * x0);
     double r = d.norm();
     return {d + x0, r, r, r};
   }
