@@ -1,7 +1,6 @@
 #ifndef COUPLED_ALPHA_MIN_CIRCUMSPHERE
 #define COUPLED_ALPHA_MIN_CIRCUMSPHERE
 
-#include <Eigen/Dense>
 #include "common.hpp"
 #include "simplex.hpp"
 
@@ -51,6 +50,7 @@ min_circumsphere(const Simplex& simplex, const std::vector<Vectord<D>>& coords) 
       }
     default:
       assert(0);
+      return {0.0, Vectord<D>::Zero()};
   }
 }
 

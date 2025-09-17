@@ -1,7 +1,9 @@
 #ifndef COUPLED_ALPHA_COMMON
 #define COUPLED_ALPHA_COMMON
 
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <Eigen/Dense>
+#pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 
 namespace coupled_alpha {
 

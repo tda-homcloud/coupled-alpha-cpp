@@ -9,7 +9,6 @@
 #include <CGAL/config.h>
 #include <CGAL/Epick_d.h>
 #include <CGAL/Delaunay_triangulation.h>
-#include <Eigen/Dense>
 
 #include "common.hpp"
 
