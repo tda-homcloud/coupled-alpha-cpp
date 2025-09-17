@@ -1,5 +1,5 @@
 HEADERS := $(wildcard *.hpp)
-FLAGS := -g -std=c++17 -Wall -Ieigen -ICGAL-5.6.1/include
+FLAGS := -Wall -g -std=c++17 -Wall -Ieigen -ICGAL-5.6.1/include
 test_simplex: test_simplex.cpp $(HEADERS)
 	g++ $(FLAGS) -o test_simplex test_simplex.cpp -lgmp -lmpfr
 
