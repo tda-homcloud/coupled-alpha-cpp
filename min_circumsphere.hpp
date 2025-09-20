@@ -6,25 +6,25 @@
 
 namespace coupled_alpha {
 
-template<int D, typename MatrixType, typename VectorType>
-Vectord<D>
-partial_lsqst_problem(
-    MatrixType& A,
-    VectorType& b,
-    const Simplex& simplex,
-    const std::vector<Vectord<D>>& coords) {
-  assert(!simplex.empty());
+// template<int D>
+// Vectord<D>
+// partial_lsqst_problem(
+//     MatrixType& A,
+//     VectorType& b,
+//     const Simplex& simplex,
+//     const std::vector<Vectord<D>>& coords) {
+//   assert(!simplex.empty());
 
-  const auto& x0 = coords[simplex[0]];
-  double sqnorm_x0 = x0.squaredNorm();
+//   const auto& x0 = coords[simplex[0]];
+//   double sqnorm_x0 = x0.squaredNorm();
   
-  for (int i = 1; i <= simplex.dim(); ++i) {
-    A.row(i - 1) = (coords[simplex[i]] - x0).transpose();
-    b[i - 1] = 0.5 * (coords[simplex[i]].squaredNorm() - sqnorm_x0);
-  }
+//   for (int i = 1; i <= simplex.dim(); ++i) {
+//     A.row(i - 1) = (coords[simplex[i]] - x0).transpose();
+//     b[i - 1] = 0.5 * (coords[simplex[i]].squaredNorm() - sqnorm_x0);
+//   }
   
-  return x0;
-}
+//   return x0;
+// }
 
 template<int D>
 std::pair<double, Vectord<D>>
@@ -43,7 +43,15 @@ min_circumsphere(const Simplex& simplex, const std::vector<Vectord<D>>& coords) 
       {
         Eigen::MatrixXd A(simplex.dim(), D);
         Eigen::VectorXd b(simplex.dim());
-        Vectord<D> x0 = partial_lsqst_problem(A, b, simplex, coords);
+
+        const auto& x0 = coords[simplex[0]];
+        double sqnorm_x0 = x0.squaredNorm();
+  
+        for (int i = 1; i <= simplex.dim(); ++i) {
+          A.row(i - 1) = (coords[simplex[i]] - x0).transpose();
+          b[i - 1] = 0.5 * (coords[simplex[i]].squaredNorm() - sqnorm_x0);
+        }
+        
         // const Vectord<D> r = A.colPivHouseholderQr().solve(b - A * x0);
         const Vectord<D> r = A.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV).solve(b - A * x0);
         return {r.squaredNorm(), x0 + r};
@@ -80,15 +88,32 @@ struct RelaxedFiltrationValue {
     
     Eigen::MatrixXd Ap(M + N + 1, D);
     Eigen::VectorXd bp(M + N + 1);
-
-    auto Ax = Ap.block(0, 0, M, D);
-    auto bx = bp.segment(0, M);
-    auto Ay = Ap.block(M, 0, N, D);
-    auto by = bp.segment(M, N);
+    const auto& x0 = coords[sx[0]];
+    const auto& y0 = coords[sy[0]];
     
-    const auto x0 = partial_lsqst_problem(Ax, bx, sx, coords);
-    const auto y0 = partial_lsqst_problem(Ay, by, sy, coords);
-
+    {
+      auto Ax = Ap.block(0, 0, M, D);
+      auto bx = bp.segment(0, M);
+      double sqnorm_x0 = x0.squaredNorm();
+  
+      for (int i = 1; i <= sx.dim(); ++i) {
+        Ax.row(i - 1) = (coords[sx[i]] - x0).transpose();
+        bx[i - 1] = 0.5 * (coords[sx[i]].squaredNorm() - sqnorm_x0);
+      }
+    }
+    {
+      auto Ay = Ap.block(M, 0, N, D);
+      auto by = bp.segment(M, N);
+      double sqnorm_y0 = y0.squaredNorm();
+  
+      for (int i = 1; i <= sy.dim(); ++i) {
+        Ay.row(i - 1) = (coords[sy[i]] - y0).transpose();
+        by[i - 1] = 0.5 * (coords[sy[i]].squaredNorm() - sqnorm_y0);
+      }
+    }
+    // const auto x0 = partial_lsqst_problem(Ax, bx, sx, coords);
+    // const auto y0 = partial_lsqst_problem(Ay, by, sy, coords);
+    
     auto A = Ap.block(0, 0, M + N, D);
     auto b = bp.segment(0, M + N);
       
